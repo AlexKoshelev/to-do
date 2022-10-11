@@ -1,20 +1,15 @@
-const tasks = [
-  {
-    id: "1138465078061",
-    completed: false,
-    text: "Закончить проект",
-  },
-  {
-    id: "1138465078062",
-    completed: false,
-    text: "Сходить на тренировку",
-  },
-  {
-    id: "1138465078063",
-    completed: false,
-    text: "Погулять с собакой",
-  },
-];
+import "../index.css";
+
+const tasksObj = [];
+let tasks;
+if (localStorage.getItem("tasks")) {
+  tasks = JSON.parse(localStorage.getItem("tasks"));
+} else {
+  const localTasks = JSON.stringify(tasksObj);
+  tasks = localStorage.setItem("tasks", localTasks);
+}
+console.log(tasks);
+
 const createTaskItem = (taskId, taskText) => {
   const taskItem = document.createElement("div");
   taskItem.className = "task-item";
@@ -105,11 +100,14 @@ const errorMessage = (errorText) => {
   createTaskBlock.append(errorMessageBlock);
 };
 const tasksList = document.querySelector(".tasks-list");
+tasks = JSON.parse(localStorage.getItem("tasks"));
 tasks.forEach((task) => {
   //получаем такски из массива
   const taskItem = createTaskItem(task.id, task.text);
   tasksList.append(taskItem);
 });
+const localTasks = JSON.stringify(tasks);
+tasks = localStorage.setItem("tasks", localTasks);
 
 const createTaskBlock = document.querySelector(".create-task-block");
 createTaskBlock.addEventListener("submit", (event) => {
@@ -122,6 +120,8 @@ createTaskBlock.addEventListener("submit", (event) => {
   const id = new Date().getTime(); // генерируем уникальный id через мс
   const { target } = event;
   const inputValue = target.taskName.value.trim(); //ловим текст в инпуте
+  tasks = JSON.parse(localStorage.getItem("tasks"));
+  /*  let newTasks = JSON.parse(localStorage.getItem("tasks")); */
   const isTaskExists = tasks.some((task) => task.text === inputValue); // если есть совпадение в тасках, возвращаем его
   if (!inputValue) {
     errorMessage("Название задачи не должно быть пустым");
@@ -134,6 +134,8 @@ createTaskBlock.addEventListener("submit", (event) => {
       text: inputValue,
     };
     tasks.push(newTask);
+    const localTasks = JSON.stringify(tasks);
+    localStorage.setItem("tasks", localTasks);
     const taskItem = createTaskItem(id, inputValue);
     tasksList.append(taskItem);
   }
@@ -149,7 +151,6 @@ tasksList.addEventListener("click", (event) => {
     modalOverlay.addEventListener("click", (event) => {
       event.preventDefault();
       const { target } = event;
-
       const isButtonCansel = target.closest(".delete-modal__cancel-button");
       const isButtonDelete = target.closest(".delete-modal__confirm-button");
       if (isButtonCansel) {
@@ -158,8 +159,11 @@ tasksList.addEventListener("click", (event) => {
       } else if (isButtonDelete) {
         const id = isButton.dataset.deleteTaskId;
         document.querySelector(`[data-task-id="${id}"]`).remove();
+        tasks = JSON.parse(localStorage.getItem("tasks"));
         const indexTask = tasks.findIndex((task) => task.id === id);
         tasks.splice(indexTask, 1);
+        tasks = JSON.stringify(tasks);
+        localStorage.setItem("tasks", tasks);
         modalOverlay.remove();
       }
     });
@@ -170,7 +174,6 @@ let isDark = false;
 
 window.addEventListener("keydown", (event) => {
   const { key } = event;
-
   if (key === "Tab") {
     event.preventDefault();
     isDark = !isDark;
